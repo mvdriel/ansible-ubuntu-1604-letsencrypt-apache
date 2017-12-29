@@ -1,0 +1,19 @@
+# tasks file for ubuntu-1604-letsencrypt-apache
+---
+- name: configure | request host certificate
+  command: "letsencrypt certonly --agree-tos --apache -d {{ ansible_host }} --email {{ ubuntu_1604_letsencrypt_apache_admin_email }}"
+  args:
+    creates: "/etc/letsencrypt/live/{{ ansible_host }}/privkey.pem"
+
+- name: configure | request additional certificates
+  command: "letsencrypt certonly --agree-tos --apache -d {{ item.name }} {{ '-d' if (item.alias | default([]) | length > 0) else '' }} {{ item.alias | default([]) | join(' -d ') }}"
+  args:
+    creates: "/etc/letsencrypt/live/{{ item.name }}/privkey.pem"
+  with_items: "{{ ubuntu_1604_letsencrypt_apache_additional_certificates }}"
+
+- name: configure | install cron job
+  cron:
+    name: letsencrypt auto renewal
+    job: PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin && letsencrypt renew --no-self-upgrade >> "/var/log/letsencrypt-renew.log"
+    hour: "{{ ubuntu_1604_letsencrypt_apache_auto_renew_hour }}"
+    minute: "{{ ubuntu_1604_letsencrypt_apache_auto_renew_minute }}"

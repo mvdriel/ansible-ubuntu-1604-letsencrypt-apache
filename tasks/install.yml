@@ -1,0 +1,6 @@
+# tasks file for ubuntu-1604-letsencrypt-apache
+---
+- name: install | dependencies
+  apt:
+    name: "{{ item }}"
+  with_items: "{{ ubuntu_1604_letsencrypt_apache_dependencies }}"

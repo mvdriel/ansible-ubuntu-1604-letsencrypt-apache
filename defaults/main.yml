@@ -1,0 +1,3 @@
+# defaults file for ubuntu-1604-letsencrypt-apache
+---
+ubuntu_1604_letsencrypt_apache_additional_certificates: []

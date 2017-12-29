@@ -1,0 +1,6 @@
+# tasks file for ubuntu-1604-letsencrypt-apache
+---
+
+- include: install.yml
+
+- include: configure.yml
