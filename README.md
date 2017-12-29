@@ -1,6 +1,6 @@
 ## ubuntu-1604-letsencrypt-apache
 
-
+Set up Let's Encrypt for Apache on Ubuntu 16.04.
 
 #### Variables
 
