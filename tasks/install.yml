@@ -1,6 +1,10 @@
 # tasks file for ubuntu-1604-letsencrypt-apache
 ---
-- name: install | dependencies
-  apt:
-    name: "{{ item }}"
-  with_items: "{{ ubuntu_1604_letsencrypt_apache_dependencies }}"
+- name: install | install (latest)
+  get_url:
+    url: "https://dl.eff.org/certbot-auto"
+    dest: "/usr/local/bin/certbot-auto"
+    force: true
+    owner: root
+    group: root
+    mode: 0755

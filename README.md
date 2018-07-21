@@ -11,3 +11,7 @@ Set up Let's Encrypt for Apache on Ubuntu 16.04.
 * `ubuntu_1604_letsencrypt_apache_auto_renew_minute`: [required]:
 
 * `ubuntu_1604_letsencrypt_apache_additional_certificates`: [default: `[]`]:
+
+* `ubuntu_1604_letsencrypt_apache_http_challenge_forward_host`:
+
+* `ubuntu_1604_letsencrypt_apache_webroot_path`: [default: `/var/lib/letsencrypt/http_challenges`]:
