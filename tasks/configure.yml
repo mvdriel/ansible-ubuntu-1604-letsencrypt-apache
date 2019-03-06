@@ -1,19 +1,42 @@
 # tasks file for ubuntu-1604-letsencrypt-apache
 ---
-- name: configure | request host certificate
-  command: "letsencrypt certonly --agree-tos --apache -d {{ ansible_host }} --email {{ ubuntu_1604_letsencrypt_apache_admin_email }}"
+- name: configure | create http challenges directory
+  file:
+    path: "{{ ubuntu_1604_letsencrypt_apache_webroot_path }}/{{ ubuntu_1604_letsencrypt_apache_acme_challenge_path }}"
+    state: directory
+
+- name: configure | copy alias configuration file
+  template:
+    src: etc/apache2/conf-available/letsencrypt.conf.j2
+    dest: "/etc/apache2/conf-available/letsencrypt.conf"
+  register: _copy_alias_configuration_file
+
+- name: configure | enable alias configuration
+  command: a2enconf letsencrypt
   args:
-    creates: "/etc/letsencrypt/live/{{ ansible_host }}/privkey.pem"
+    creates: "/etc/apache2/conf-enabled/letsencrypt.conf"
+  register: _enable_alias_configuration
+
+- name: configure | reload apache2
+  service:
+    name: apache2
+    state: reloaded
+  when: _copy_alias_configuration_file | changed or _enable_alias_configuration | changed
+
+- name: configure | request host certificate
+  command: "certbot-auto certonly --agree-tos --webroot -w {{ ubuntu_1604_letsencrypt_apache_webroot_path }} -d {{ ansible_host }} --email {{ ubuntu_1604_letsencrypt_apache_admin_email }}"
+  args:
+    creates: "/etc/letsencrypt/renewal/{{ ansible_host }}.conf"
 
 - name: configure | request additional certificates
-  command: "letsencrypt certonly --agree-tos --apache -d {{ item.name }} {{ '-d' if (item.alias | default([]) | length > 0) else '' }} {{ item.alias | default([]) | join(' -d ') }}"
+  command: "certbot-auto certonly --agree-tos --webroot -w {{ ubuntu_1604_letsencrypt_apache_webroot_path }} -d {{ item.name }} {{ '-d' if (item.alias | default([]) | length > 0) else '' }} {{ item.alias | default([]) | join(' -d ') }}"
   args:
-    creates: "/etc/letsencrypt/live/{{ item.name }}/privkey.pem"
+    creates: "/etc/letsencrypt/renewal/{{ item.name }}.conf"
   with_items: "{{ ubuntu_1604_letsencrypt_apache_additional_certificates }}"
 
 - name: configure | install cron job
   cron:
     name: letsencrypt auto renewal
-    job: PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin && letsencrypt renew --no-self-upgrade >> "/var/log/letsencrypt-renew.log"
+    job: /usr/local/bin/certbot-auto renew --no-self-upgrade >> "/var/log/letsencrypt-renew.log"
     hour: "{{ ubuntu_1604_letsencrypt_apache_auto_renew_hour }}"
     minute: "{{ ubuntu_1604_letsencrypt_apache_auto_renew_minute }}"
