@@ -24,14 +24,14 @@
   when: _copy_alias_configuration_file | changed or _enable_alias_configuration | changed
 
 - name: configure | request host certificate
-  command: "certbot-auto certonly --agree-tos --webroot -w {{ ubuntu_1604_letsencrypt_apache_webroot_path }} -d {{ ansible_host }} --email {{ ubuntu_1604_letsencrypt_apache_admin_email }}"
-  args:
-    creates: "/etc/letsencrypt/renewal/{{ ansible_host }}.conf"
+  command: "certbot-auto certonly -n --agree-tos --keep-until-expiring --expand --webroot -w {{ ubuntu_1604_letsencrypt_apache_webroot_path }} --cert-name {{ ansible_host }} -d {{ ansible_host }} --email {{ ubuntu_1604_letsencrypt_apache_admin_email }}"
+  register: _ubuntu_1604_letsencrypt_configure_request_host_certificate
+  changed_when: "not 'no action taken' in _ubuntu_1604_letsencrypt_configure_request_host_certificate.stdout"
 
 - name: configure | request additional certificates
-  command: "certbot-auto certonly --agree-tos --webroot -w {{ ubuntu_1604_letsencrypt_apache_webroot_path }} -d {{ item.name }} {{ '-d' if (item.alias | default([]) | length > 0) else '' }} {{ item.alias | default([]) | join(' -d ') }}"
-  args:
-    creates: "/etc/letsencrypt/renewal/{{ item.name }}.conf"
+  command: "certbot-auto certonly -n --agree-tos --keep-until-expiring --expand --webroot -w {{ ubuntu_1604_letsencrypt_apache_webroot_path }} --cert-name {{ item.name }} -d {{ item.name }} {{ '-d' if (item.alias | default([]) | length > 0) else '' }} {{ item.alias | default([]) | join(' -d ') }}"
+  register: _ubuntu_1604_letsencrypt_reg_certbot_http
+  changed_when: "not 'no action taken' in _ubuntu_1604_letsencrypt_reg_certbot_http.stdout"
   with_items: "{{ ubuntu_1604_letsencrypt_apache_additional_certificates }}"
 
 - name: configure | install cron job
