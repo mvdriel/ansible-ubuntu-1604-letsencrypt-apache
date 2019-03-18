@@ -30,8 +30,8 @@
 
 - name: configure | request additional certificates
   command: "certbot-auto certonly -n --agree-tos --keep-until-expiring --expand --webroot -w {{ ubuntu_1604_letsencrypt_apache_webroot_path }} --cert-name {{ item.name }} -d {{ item.name }} {{ '-d' if (item.alias | default([]) | length > 0) else '' }} {{ item.alias | default([]) | join(' -d ') }}"
-  register: _ubuntu_1604_letsencrypt_reg_certbot_http
-  changed_when: "not 'no action taken' in _ubuntu_1604_letsencrypt_reg_certbot_http.stdout"
+  register: _ubuntu_1604_letsencrypt_configure_request_additional_certificates
+  changed_when: "not 'no action taken' in _ubuntu_1604_letsencrypt_configure_request_additional_certificates.stdout"
   with_items: "{{ ubuntu_1604_letsencrypt_apache_additional_certificates }}"
 
 - name: configure | install cron job
